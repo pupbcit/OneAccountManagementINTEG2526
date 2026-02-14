@@ -8,7 +8,7 @@ namespace OneAccountManagement
         {
             Console.WriteLine("ACCOUNT MANAGEMENT SYSTEM");
 
-            string username = "superuser";
+            string username = "superadmin";
             string password = "superuser123!";
 
             Console.Write("Enter username: ");
