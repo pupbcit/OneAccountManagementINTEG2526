@@ -1,28 +1,119 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Security.AccessControl;
+using System.Security.Cryptography.X509Certificates;
+using System.Text;
 
 namespace OneAccountManagement
 {
     internal class Program
     {
+        static string[] usernames = new string[3];
+        static string[] passwords = new string[3];
+        static List<string> accessLogs = new List<string>();
+
         static void Main(string[] args)
         {
             Console.WriteLine("ACCOUNT MANAGEMENT SYSTEM");
 
-            string username = "superuser";
-            string password = "superuser123!";
+            PopulateData();
 
+            bool isLogin = LoginOption();
+
+            while (isLogin)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    if (UserLogin())
+                    {
+                        Console.WriteLine("Login Successful!");
+                        break;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid Credentials.");
+                    }
+                }
+
+                isLogin = LoginOption();
+            }
+
+            DisplayLogs();
+        }
+
+        static bool LoginOption()
+        {
+            Console.Write("Do you want to login? y/n: ");
+            string loginInput = Console.ReadLine();
+
+            bool isLogin = false;
+
+            switch (loginInput)
+            {
+                case "y":
+                    isLogin = true;
+                    break;
+                case "n":
+                    isLogin = false;
+                    break;
+                default:
+                    Console.WriteLine("Invalid input. System will exit.");
+                    Environment.Exit(0);
+                    break;
+            }
+
+            return isLogin;
+        }
+
+        static void PopulateData()
+        {
+            usernames[0] = "admin";
+            usernames[1] = "superuser";
+            usernames[2] = "guest";
+
+            passwords[0] = "admin123!";
+            passwords[1] = "superuser123!";
+            passwords[2] = "guest123!";
+
+        }
+
+        static void AddAccessLogs(string usernameInput, string passwordInput, bool isMatched)
+        {
+            accessLogs.Add($"username: {usernameInput}, password: {passwordInput}, Is Success?: {isMatched}");
+        }
+
+        static bool UserLogin()
+        {
             Console.Write("Enter username: ");
             string usernameInput = Console.ReadLine();
             Console.Write("Enter password: ");
             string passwordInput = Console.ReadLine();
 
-            if (usernameInput == username && passwordInput == password)
+            bool isMatched = false;
+
+            for (int x = 0; x < usernames.Length; x++)
             {
-                Console.WriteLine("Login successful.");
+                if (usernameInput == usernames[x] && passwordInput == passwords[x])
+                {
+                    isMatched = true;
+                    break;
+                }
+                else
+                {
+                    isMatched = false;
+                }
             }
-            else
+
+            AddAccessLogs(usernameInput, passwordInput, isMatched);
+
+            return isMatched;
+        }
+
+        static void DisplayLogs()
+        {
+            foreach (var log in accessLogs)
             {
-                Console.WriteLine("Invalid credentials.");
+                Console.WriteLine(log);
             }
         }
     }
