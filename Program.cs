@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using AccountManagementAppService;
+using AccountManagementModels;
 
 namespace OneAccountManagement
 {
@@ -9,11 +11,11 @@ namespace OneAccountManagement
         static List<string> usernames = new List<string>();
         static List<string> passwords = new List<string>();
 
+        static AccountAppService accountAppService = new AccountAppService();
+
         static void Main(string[] args)
         {
             Console.WriteLine("ACCOUNT MANAGEMENT SYSYEM");
-
-            PopulateDefaultAccounts();
 
             bool isLogin = ShowLoginOption();
 
@@ -23,16 +25,6 @@ namespace OneAccountManagement
 
                 isLogin = ShowLoginOption();
             }
-        }
-
-        static void PopulateDefaultAccounts()
-        {
-            usernames.Add("admin");
-            usernames.Add("user");
-            usernames.Add("guest");
-            passwords.Add("admin123!");
-            passwords.Add("user123!");
-            passwords.Add("guest123!");
         }
 
         static bool ShowLoginOption()
@@ -74,20 +66,8 @@ namespace OneAccountManagement
                 string usernameInput = Console.ReadLine();
                 Console.Write("Enter password: ");
                 string passwordInput = Console.ReadLine();
-                bool isMatched = false;
 
-                for (int x = 0; x < passwords.Count; x++)
-                {
-                    if (usernameInput == usernames[x] && passwordInput == passwords[x])
-                    {
-                        isMatched = true;
-                        break;
-                    }
-                    else
-                    {
-                        isMatched = false;
-                    }
-                }
+                bool isMatched = accountAppService.Authenticate(usernameInput, passwordInput);
 
                 AddAccessLogs(usernameInput, passwordInput, isMatched);
 
@@ -155,7 +135,7 @@ namespace OneAccountManagement
             }
         }
 
-        private static void UpdateUser()
+        static void UpdateUser()
         {
             Console.WriteLine("UPDATE USER: ");
             Console.Write("Enter the username of the user you want to update: ");
@@ -186,7 +166,7 @@ namespace OneAccountManagement
             AdminMenu();
         }
 
-        private static bool ValidateUserName(string username)
+        static bool ValidateUserName(string username)
         {
             bool valid = true;
             foreach (var un in usernames)
@@ -199,31 +179,36 @@ namespace OneAccountManagement
             return valid;
         }
 
-        private static void AddUser()
+        static void AddUser()
         {
             Console.WriteLine("ADDING USER: Enter the necessary information");
             Console.Write("username: ");
             string username = Console.ReadLine();
             Console.Write("password: ");
             string password = Console.ReadLine();
-            usernames.Add(username);
-            passwords.Add(password);
-            Console.WriteLine($"Successfully added user {username}");
+
+            Account newAccount = new Account { AccountId = Guid.NewGuid(), Username = username, Password = password };
+
+            accountAppService.Register(newAccount);
+
+            Console.WriteLine($"Successfully added user {newAccount.AccountId}");
             AdminMenu();
         }
 
-        private static void ViewUsers()
+        static void ViewUsers()
         {
             Console.WriteLine("\nHere are the list of users.. ");
 
-            for (int i = 0; i < usernames.Count; i++)
+            var accounts = accountAppService.GetAccounts();
+
+            foreach (var account in accounts)
             {
-                Console.WriteLine($"[{i + 1}] username: {usernames[i]}, password: {passwords[i]}");
+                Console.WriteLine($"ID: {account.AccountId} username: {account.Username}, password: {account.Password}");
+
             }
 
             AdminMenu();
         }
-
 
         static void ShowOptions(string[] options)
         {
